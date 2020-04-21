@@ -1,22 +1,22 @@
-const float FREQ_MAX = 5.0f;
+const float FREQ_MAX = 10.0f;
 const float FREQ_MIN = 1.0f;
+const float ANGLE_INC = 0.5f;
 
 float angle = 0.0f;
 float frequency = 0.0f;
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
-  Serial.begin(9600);
 }
 
 void loop() {
-  Serial.println(frequency);
   frequency = fmap(sin(angle), -1.0f, 1.0f, FREQ_MIN, FREQ_MAX); // Frequency in Hz
+  int periodMillis = (1 / frequency) * 1000; // Period in seconds and converted to ms
   digitalWrite(LED_BUILTIN, HIGH);
-  delay((1 / frequency) * 1000);
+  delay(periodMillis);
   digitalWrite(LED_BUILTIN, LOW);
-  delay((1 / frequency) * 1000);
-  angle = (angle + 0.5f);
+  delay(periodMillis);
+  angle += ANGLE_INC;
 }
 
 /*
