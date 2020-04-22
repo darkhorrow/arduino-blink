@@ -1,22 +1,30 @@
-const float FREQ_MAX = 10.0f;
+const float FREQ_MAX = 5.0f;
 const float FREQ_MIN = 1.0f;
 const float ANGLE_INC = 0.5f;
 
 float angle = 0.0f;
-float frequency = 0.0f;
+float frequency = FREQ_MIN;
+unsigned int periodMillis = (1 / frequency) * 1000;
+unsigned long timer = 0;
+bool didToogleBefore = false;
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop() {
-  frequency = fmap(sin(angle), -1.0f, 1.0f, FREQ_MIN, FREQ_MAX); // Frequency in Hz
-  int periodMillis = (1 / frequency) * 1000; // Period in seconds and converted to ms
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(periodMillis);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(periodMillis);
-  angle += ANGLE_INC;
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - timer >= periodMillis) {
+    toogleLedBuiltin();
+    if (didToogleBefore) {
+      angle += ANGLE_INC;
+      frequency = fmap(sin(angle), -1.0f, 1.0f, FREQ_MIN, FREQ_MAX); // Frequency in Hz
+      periodMillis = (1 / frequency) * 1000; // Period in seconds and converted to ms
+    }
+    timer = currentMillis;
+    didToogleBefore = !didToogleBefore;
+  }
 }
 
 /*
@@ -30,4 +38,18 @@ void loop() {
 */
 float fmap(float s, float a1, float a2, float b1, float b2) {
   return b1 + (((s - a1) * (b2 - b1)) / (a2 - a1));
+}
+
+/*
+   @description: Changes the builtin led state
+*/
+void toogleLedBuiltin() {
+  switch (digitalRead(LED_BUILTIN)) {
+    case LOW:
+      digitalWrite(LED_BUILTIN, HIGH);
+      break;
+    case HIGH:
+      digitalWrite(LED_BUILTIN, LOW);
+      break;
+  }
 }
