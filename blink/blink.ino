@@ -1,6 +1,6 @@
 const float FREQ_MAX = 5.0f;
 const float FREQ_MIN = 1.0f;
-const float ANGLE_INC = 0.5f;
+const float ANGLE_INC = PI/8;
 
 float angle = 0.0f;
 float frequency = FREQ_MIN;
@@ -10,10 +10,13 @@ bool didToogleBefore = false;
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
+  Serial.begin(9600);
 }
 
 void loop() {
   unsigned long currentMillis = millis();
+
+  Serial.println(frequency);
 
   if (currentMillis - timer >= periodMillis) {
     toogleLedBuiltin();
