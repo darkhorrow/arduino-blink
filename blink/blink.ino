@@ -1,29 +1,25 @@
-const float FREQ_MAX = 5.0f;
-const float FREQ_MIN = 1.0f;
-const float ANGLE_INC = PI/8;
+const float FREQ_MAX = 3.0f;
+const float FREQ_MIN = 0.5f;
 
-float angle = 0.0f;
+float angle;
 float frequency = FREQ_MIN;
-unsigned int periodMillis = (1 / frequency) * 1000;
+unsigned int periodMillis = (1 / frequency) * 1000 / 2;
 unsigned long timer = 0;
 bool didToogleBefore = false;
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
-  Serial.begin(9600);
 }
 
 void loop() {
   unsigned long currentMillis = millis();
 
-  Serial.println(frequency);
-
   if (currentMillis - timer >= periodMillis) {
     toogleLedBuiltin();
     if (didToogleBefore) {
-      angle += ANGLE_INC;
+      angle = currentMillis * 2.f * PI / 12000.f;
       frequency = fmap(sin(angle), -1.0f, 1.0f, FREQ_MIN, FREQ_MAX); // Frequency in Hz
-      periodMillis = (1 / frequency) * 1000; // Period in seconds and converted to ms
+      periodMillis = (1 / frequency) * 1000 / 2; // Period in seconds and converted to ms
     }
     timer = currentMillis;
     didToogleBefore = !didToogleBefore;
