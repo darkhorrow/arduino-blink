@@ -1,5 +1,6 @@
 const float FREQ_MAX = 3.0f;
 const float FREQ_MIN = 0.5f;
+const float WAVE_TIMELENGTH = 12000.0f;
 
 float angle;
 float frequency = FREQ_MIN;
@@ -17,7 +18,7 @@ void loop() {
   if (currentMillis - timer >= periodMillis) {
     toogleLedBuiltin();
     if (didToogleBefore) {
-      angle = currentMillis * 2.f * PI / 12000.f;
+      angle = currentMillis * 2.0f * PI / WAVE_TIMELENGTH;
       frequency = fmap(sin(angle), -1.0f, 1.0f, FREQ_MIN, FREQ_MAX); // Frequency in Hz
       periodMillis = (1 / frequency) * 1000 / 2; // Period in seconds and converted to ms
     }
