@@ -1,26 +1,23 @@
-//################# Para la ampliación del proyecto ####################
-// SCL/SCK = A5
-// SDA = A4
-// Lectura de pulsadores = A0
-// Led Réplica del pin 13 = 2
-
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include  <LiquidCrystal.h>
+#include <LiquidCrystal.h>
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-// Valores iniciales de X e Y del display OLED
-int startX = 1;
-float x = startX;
-int y, prev_y;
+const int START_X = 0;
+const float X_INC = 0.1f;
+const float COLOR = WHITE;
+const int PADDING = 1;
 
-const int LED_BUILTIN_AUX = 2;
+const int LED_BUILTIN_AUX = 3;
 const int BUTTONS_PIN = 0;
+const int INTERRUPTION_PIN = 2;
+
+const int INTENSITY = 1;
 
 const float ZOOM_FACTOR = 10.0f;
 const int MAX_ZOOM = 9;
@@ -28,6 +25,7 @@ const int MIN_ZOOM = 1;
 
 const float MAX_FREQUENCY_LOWER = 1.0f;
 const float MAX_FREQUENCY_UPPER = 20.0f;
+const float MIN_FREQUENCY_LOWER = 0.5f;
 const float FREQUENCY_FACTOR = 0.5f;
 
 const int LCD_WIDTH = 16;
@@ -46,6 +44,8 @@ bool didToogleBefore = false;
 int zoom = 1;
 
 bool isOLedAvailable = false;
+float x = START_X;
+float previousY = SCREEN_HEIGHT;
 
 enum Buttons {
   SELECT = 750,
@@ -56,41 +56,27 @@ enum Buttons {
 };
 
 void setup() {
-  if (display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+  if (oled.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     isOLedAvailable = true;
-    display.clearDisplay();
-    axis();
+    oled.clearDisplay();
   }
+
+  Serial.begin(9600);
 
   lcd.begin(LCD_WIDTH, LCD_HEIGHT);
   lcdDisplay();
 
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(LED_BUILTIN_AUX, OUTPUT);
+
+  pinMode(INTERRUPTION_PIN, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(INTERRUPTION_PIN), onButtonPressed, CHANGE);
 }
 
 void loop() {
   unsigned long currentMillis = millis();
 
-  onButtonPressed();
-
-  // ############################ Parte de impresion en OLED y pulsadores #####################
-  y = map(frequency, freqMin, freqMax, SCREEN_HEIGHT / 2 + 20, SCREEN_HEIGHT / 2 - 20);
-
-  display.drawLine(x, prev_y, x + 0.5, y, WHITE);// El 0.5 hay que retocarlo quizás
-  prev_y = y;
-  x += zoom / ZOOM_FACTOR; // Aumentando el valor hace zoom (Como el factor de ampliación visual de la onda)
-  if (x >= (SCREEN_WIDTH - startX)) {
-    x = startX;// Esta linea
-    axis();
-    //    display.startscrollleft(0x01, 0x07);// Hace scroll horizontal de las filas desde la primera dirección hasta la segunda(El display tiene 8 filas)
-    //    delay(9000);// Este tiempo es el que está haciendo el scroll
-    //    display.stopscroll();
-  }
-  display.display();
-
-  // --------------------------------------------------
-  // #############################################################################################
+  oLedDisplay();
 
   if (currentMillis - timer >= periodMillis) {
     toogleLedBuiltin();
@@ -124,20 +110,29 @@ void toogleLedBuiltin() {
   switch (digitalRead(LED_BUILTIN)) {
     case LOW:
       digitalWrite(LED_BUILTIN, HIGH);
-      digitalWrite(LED_BUILTIN_AUX, HIGH);
+      analogWrite(LED_BUILTIN_AUX, INTENSITY);
       break;
     case HIGH:
       digitalWrite(LED_BUILTIN, LOW);
-      digitalWrite(LED_BUILTIN_AUX, LOW);
+      analogWrite(LED_BUILTIN_AUX, 0);
       break;
   }
 }
 
-void axis() {
-  display.clearDisplay();
-  display.drawLine(startX, SCREEN_HEIGHT, startX, 10, WHITE); // Dibuja el eje Y
-  display.drawLine(startX, SCREEN_HEIGHT - startX, SCREEN_WIDTH - startX, SCREEN_HEIGHT - startX, WHITE);// Dibuja el eje X
-  display.display();
+void oLedDisplay() {
+  int y = map(frequency, MIN_FREQUENCY_LOWER, MAX_FREQUENCY_UPPER, SCREEN_HEIGHT - PADDING, PADDING);
+
+  oled.drawLine(x, previousY, x + X_INC, y, COLOR);
+  
+  previousY = y;
+  x += zoom / ZOOM_FACTOR;
+  
+  if (x >= SCREEN_WIDTH) {
+    x = START_X;
+    oled.clearDisplay();
+  }
+  
+  oled.display();
 }
 
 void lcdDisplay() {
@@ -169,14 +164,14 @@ void onButtonPressed() {
   if (pressedButton <= DOWN && pressedButton > UP) {
     pinMode(BUTTONS_PIN, INPUT_PULLUP);
     analogWrite(BUTTONS_PIN, 1024);
-    freqMax = max(freqMax - FREQUENCY_FACTOR, MAX_FREQUENCY_LOWER);
+    freqMax = max(max(freqMax - FREQUENCY_FACTOR, MAX_FREQUENCY_LOWER), freqMin + FREQUENCY_FACTOR);
     lcdDisplay();
     return;
   }
   if (pressedButton <= UP && pressedButton > RIGHT) {
     pinMode(BUTTONS_PIN, INPUT_PULLUP);
     analogWrite(BUTTONS_PIN, 1024);
-    freqMax = min(freqMax + FREQUENCY_FACTOR, MAX_FREQUENCY_UPPER);
+    freqMax = max(min(freqMax + FREQUENCY_FACTOR, MAX_FREQUENCY_UPPER), freqMin + FREQUENCY_FACTOR);
     lcdDisplay();
     return;
   }
