@@ -61,8 +61,6 @@ void setup() {
     oled.clearDisplay();
   }
 
-  Serial.begin(9600);
-
   lcd.begin(LCD_WIDTH, LCD_HEIGHT);
   lcdDisplay();
 
