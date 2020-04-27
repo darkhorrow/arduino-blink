@@ -8,28 +8,28 @@
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-const int START_X = 0;
-const float X_INC = 0.1f;
-const float COLOR = WHITE;
-const int PADDING = 1;
+#define START_X 0
+#define X_INC 0.1f
+#define COLOR WHITE
+#define PADDING 1
 
-const int LED_BUILTIN_AUX = 3;
-const int BUTTONS_PIN = 0;
-const int INTERRUPTION_PIN = 2;
+#define LED_BUILTIN_AUX 3
+#define BUTTONS_PIN 0
+#define INTERRUPTION_PIN 2
 
-const int INTENSITY = 1;
+#define INTENSITY 1
 
-const float ZOOM_FACTOR = 10.0f;
-const int MAX_ZOOM = 9;
-const int MIN_ZOOM = 1;
+#define ZOOM_FACTOR 10.0f
+#define MAX_ZOOM 9
+#define MIN_ZOOM 1
 
-const float MAX_FREQUENCY_LOWER = 1.0f;
-const float MAX_FREQUENCY_UPPER = 20.0f;
-const float MIN_FREQUENCY_LOWER = 0.5f;
-const float FREQUENCY_FACTOR = 0.5f;
+#define MAX_FREQUENCY_LOWER 1.0f
+#define MAX_FREQUENCY_UPPER 20.0f
+#define MIN_FREQUENCY_LOWER 0.5f
+#define FREQUENCY_FACTOR 0.5f
 
-const int LCD_WIDTH = 16;
-const int LCD_HEIGHT = 2;
+#define LCD_WIDTH 16
+#define LCD_HEIGHT 2
 
 float freqMax = 5.0f;
 float freqMin = 1.0f;
