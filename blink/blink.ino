@@ -19,6 +19,8 @@ Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 #define INTENSITY 1
 
+#define WAVE_PERIOD 12000.f
+
 #define ZOOM_FACTOR 10.0f
 #define MAX_ZOOM 9
 #define MIN_ZOOM 1
@@ -79,7 +81,7 @@ void loop() {
   if (currentMillis - timer >= periodMillis) {
     toogleLedBuiltin();
     if (didToogleBefore) {
-      angle = currentMillis * 2.f * PI / 12000.f;
+      angle = currentMillis * 2.f * PI / WAVE_PERIOD;
       frequency = fmap(sin(angle), -1.0f, 1.0f, freqMin, freqMax); // Frequency in Hz
       periodMillis = (1 / frequency) * 1000 / 2; // Period in seconds and converted to ms
     }
